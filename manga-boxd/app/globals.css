@@ -9,16 +9,19 @@
 }
 
 :root {
-  /* Letterboxd-inspired dark theme */
+  /* Letterboxd-inspired dark theme - more accurate colors */
   --bg-primary: #14181c;
   --bg-secondary: #1c2127;
   --bg-tertiary: #2c3440;
+  --bg-card: #1f2937;
   --text-primary: #ffffff;
   --text-secondary: #9ab;
   --text-muted: #678;
   --accent-orange: #ff8000;
   --accent-orange-hover: #ff9500;
+  --accent-green: #00c030;
   --border-color: #456;
+  --border-subtle: #2c3440;
 }
 
 html,
@@ -32,4 +35,21 @@ body {
   color: var(--text-primary);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.6;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Link hover effects */
+a {
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 2px;
 }
