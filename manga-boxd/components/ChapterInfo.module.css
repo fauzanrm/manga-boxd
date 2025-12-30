@@ -1,0 +1,92 @@
+.container {
+  background-color: var(--bg-secondary);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.placeholder {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.placeholderText {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ratingBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--accent-orange);
+  color: var(--bg-primary);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+}
+
+.ratingValue {
+  font-size: 2rem;
+}
+
+.ratingStar {
+  font-size: 1.5rem;
+}
+
+.reviewCount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  min-width: 4rem;
+  text-align: center;
+}
+
+.noRating {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  min-width: 4rem;
+  text-align: center;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}

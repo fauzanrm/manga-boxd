@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import MangaChapterSection from '@/components/MangaChapterSection'
 import styles from './page.module.css'
 
 export default async function MangaDetailPage({
@@ -13,6 +14,7 @@ export default async function MangaDetailPage({
   const { id } = await params
   const supabase = createClient()
 
+  // Fetch manga details
   const { data: manga, error } = await supabase
     .from('manga')
     .select('*')
@@ -22,6 +24,33 @@ export default async function MangaDetailPage({
   if (error || !manga) {
     notFound()
   }
+
+  // Fetch all chapters for this manga
+  const { data: chapters } = await supabase
+    .from('chapters')
+    .select('id, chapter_number, title, cover_image, release_date, volume_number, arc')
+    .eq('manga_id', id)
+    .order('chapter_number', { ascending: true })
+
+  // Fetch review statistics per chapter
+  const { data: reviewStats } = await supabase
+    .from('chapter_reviews')
+    .select('chapter_id, rating')
+    .in('chapter_id', chapters?.map(c => c.id) || [])
+
+  // Aggregate review data by chapter
+  const chapterData = chapters?.map(chapter => {
+    const chapterReviews = reviewStats?.filter(r => r.chapter_id === chapter.id) || []
+    const avgRating = chapterReviews.length > 0
+      ? chapterReviews.reduce((sum, r) => sum + r.rating, 0) / chapterReviews.length
+      : null
+
+    return {
+      ...chapter,
+      avg_rating: avgRating,
+      review_count: chapterReviews.length
+    }
+  }) || []
 
   return (
     <div>
@@ -69,6 +98,9 @@ export default async function MangaDetailPage({
               )}
             </div>
           </div>
+
+          {/* Chapter Ratings Section */}
+          <MangaChapterSection chapters={chapterData} />
         </div>
       </main>
     </div>
