@@ -19,6 +19,7 @@ interface ChapterGridProps {
   chapters: ChapterData[]
   selectedChapter: number | null
   onChapterSelect: (chapterNumber: number) => void
+  currentPage: number
 }
 
 type MetricType = 'rating' | 'volume' | 'arc' | 'year'
@@ -85,13 +86,19 @@ const YEAR_COLORS = [
   '#6366f1', // Indigo
 ]
 
-export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect }: ChapterGridProps) {
+export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect, currentPage }: ChapterGridProps) {
   const [hoveredChapter, setHoveredChapter] = useState<number | null>(null)
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('rating')
   const [grouping, setGrouping] = useState<GroupingType>('none')
 
   const ROWS = 5
   const VISIBLE_CELLS = 100
+
+  // Calculate pagination
+  const totalPages = Math.ceil(chapters.length / VISIBLE_CELLS)
+  const startIndex = currentPage * VISIBLE_CELLS
+  const endIndex = Math.min(startIndex + VISIBLE_CELLS, chapters.length)
+  const paginatedChapters = chapters.slice(startIndex, endIndex)
 
   // Get unique values for categorical metrics
   const uniqueVolumes = useMemo(() =>
@@ -139,8 +146,8 @@ export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect
 
   // Calculate grid layout with grouping support
   const { gridData, chapterPositions, totalColumns } = useMemo(() => {
-    // Determine total columns based on all chapters
-    const totalChapters = chapters.length
+    // Determine total columns based on paginated chapters
+    const totalChapters = paginatedChapters.length
     const baseColumns = Math.ceil(totalChapters / ROWS)
     const minCols = Math.ceil(VISIBLE_CELLS / ROWS)
     const gridColumns = Math.max(baseColumns, minCols)
@@ -166,7 +173,7 @@ export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect
     let lastGroupValue: string | number | null = null
     let totalCols = 0
 
-    chapters.forEach((chapter, index) => {
+    paginatedChapters.forEach((chapter, index) => {
       const groupValue = getGroupValue(chapter)
 
       // If we're starting a new group (and not the first chapter), add a 1-cell gap
@@ -202,7 +209,7 @@ export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect
     )
 
     positions.forEach((pos, chapterId) => {
-      const chapter = chapters.find(c => c.id === chapterId)
+      const chapter = paginatedChapters.find(c => c.id === chapterId)
       if (chapter && pos.row < ROWS && pos.col < totalCols) {
         grid[pos.row][pos.col] = chapter
       }
@@ -213,7 +220,7 @@ export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect
       chapterPositions: positions,
       totalColumns: totalCols
     }
-  }, [chapters, grouping, ROWS, VISIBLE_CELLS])
+  }, [paginatedChapters, grouping, ROWS, VISIBLE_CELLS])
 
   // Color function for rating gradient - Red (0) to Green (10)
   const getColorForRating = (rating: number | null) => {
@@ -330,70 +337,97 @@ export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect
     <div className={styles.container}>
       <div className={styles.headerSection}>
         <div className={styles.header}>
-          <h3 className={styles.title}>Chapter Overview</h3>
+          {/* HIDDEN - Chapter Overview title */}
+          {false && <h3 className={styles.title}>Chapter Overview</h3>}
 
-          {/* Metric Selection Chips */}
-          <div className={styles.controlGroup}>
-            <span className={styles.controlLabel}>Color by:</span>
+          {/* HIDDEN FOR NOW - Metric Selection Chips */}
+          {false && (
+            <div className={styles.controlGroup}>
+              <span className={styles.controlLabel}>Color by:</span>
+              <div className={styles.chipGroup}>
+                <button
+                  className={`${styles.chip} ${selectedMetric === 'rating' ? styles.chipActive : ''}`}
+                  onClick={() => setSelectedMetric('rating')}
+                >
+                  Rating
+                </button>
+                <button
+                  className={`${styles.chip} ${selectedMetric === 'volume' ? styles.chipActive : ''}`}
+                  onClick={() => setSelectedMetric('volume')}
+                >
+                  Volume
+                </button>
+                <button
+                  className={`${styles.chip} ${selectedMetric === 'arc' ? styles.chipActive : ''}`}
+                  onClick={() => setSelectedMetric('arc')}
+                >
+                  Arc
+                </button>
+                <button
+                  className={`${styles.chip} ${selectedMetric === 'year' ? styles.chipActive : ''}`}
+                  onClick={() => setSelectedMetric('year')}
+                >
+                  Year
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* HIDDEN FOR NOW - Grouping Selection */}
+        {false && (
+          <div className={styles.groupingControl}>
+            <span className={styles.controlLabel}>Group by:</span>
             <div className={styles.chipGroup}>
               <button
-                className={`${styles.chip} ${selectedMetric === 'rating' ? styles.chipActive : ''}`}
-                onClick={() => setSelectedMetric('rating')}
+                className={`${styles.chip} ${grouping === 'none' ? styles.chipActive : ''}`}
+                onClick={() => setGrouping('none')}
               >
-                Rating
+                None
               </button>
               <button
-                className={`${styles.chip} ${selectedMetric === 'volume' ? styles.chipActive : ''}`}
-                onClick={() => setSelectedMetric('volume')}
+                className={`${styles.chip} ${grouping === 'volume' ? styles.chipActive : ''}`}
+                onClick={() => setGrouping('volume')}
               >
                 Volume
               </button>
               <button
-                className={`${styles.chip} ${selectedMetric === 'arc' ? styles.chipActive : ''}`}
-                onClick={() => setSelectedMetric('arc')}
+                className={`${styles.chip} ${grouping === 'arc' ? styles.chipActive : ''}`}
+                onClick={() => setGrouping('arc')}
               >
                 Arc
               </button>
               <button
-                className={`${styles.chip} ${selectedMetric === 'year' ? styles.chipActive : ''}`}
-                onClick={() => setSelectedMetric('year')}
+                className={`${styles.chip} ${grouping === 'year' ? styles.chipActive : ''}`}
+                onClick={() => setGrouping('year')}
               >
                 Year
               </button>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Grouping Selection */}
-        <div className={styles.groupingControl}>
-          <span className={styles.controlLabel}>Group by:</span>
-          <div className={styles.chipGroup}>
+        {/* HIDDEN FOR NOW - Horizontal Pagination Controls */}
+        {false && totalPages > 1 && (
+          <div className={styles.paginationControl}>
             <button
-              className={`${styles.chip} ${grouping === 'none' ? styles.chipActive : ''}`}
-              onClick={() => setGrouping('none')}
+              className={styles.paginationButton}
+              disabled={currentPage === 0}
             >
-              None
+              ← Previous
             </button>
+            <span className={styles.pageIndicator}>
+              Chapters {startIndex + 1}-{endIndex} of {chapters.length}
+              <span className={styles.pageNumber}> (Page {currentPage + 1} of {totalPages})</span>
+            </span>
             <button
-              className={`${styles.chip} ${grouping === 'volume' ? styles.chipActive : ''}`}
-              onClick={() => setGrouping('volume')}
+              className={styles.paginationButton}
+              disabled={currentPage === totalPages - 1}
             >
-              Volume
-            </button>
-            <button
-              className={`${styles.chip} ${grouping === 'arc' ? styles.chipActive : ''}`}
-              onClick={() => setGrouping('arc')}
-            >
-              Arc
-            </button>
-            <button
-              className={`${styles.chip} ${grouping === 'year' ? styles.chipActive : ''}`}
-              onClick={() => setGrouping('year')}
-            >
-              Year
+              Next →
             </button>
           </div>
-        </div>
+        )}
       </div>
 
       <div className={styles.gridWrapper}>
@@ -448,8 +482,8 @@ export default function ChapterGrid({ chapters, selectedChapter, onChapterSelect
         )}
       </div>
 
-      {/* Dynamic Legend */}
-      {legendData && (
+      {/* HIDDEN FOR NOW - Dynamic Legend */}
+      {false && legendData && (
         <div className={styles.legendContainer}>
           {legendData.type === 'gradient' ? (
             <div className={styles.legend}>

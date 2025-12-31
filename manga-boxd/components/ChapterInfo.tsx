@@ -33,6 +33,9 @@ export default function ChapterInfo({ chapter }: ChapterInfoProps) {
           Chapter {chapter.chapter_number}
           {chapter.title && <span className={styles.subtitle}> • {chapter.title}</span>}
         </h3>
+        <p className={styles.description}>
+          This is where chapter synopsis or description would go. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        </p>
       </div>
 
       <div className={styles.stats}>

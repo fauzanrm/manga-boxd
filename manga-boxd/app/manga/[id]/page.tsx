@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase'
 import Image from 'next/image'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import MangaChapterSection from '@/components/MangaChapterSection'
@@ -57,50 +56,53 @@ export default async function MangaDetailPage({
       <Navbar />
       <main className={styles.main}>
         <div className={styles.container}>
-          <Link href="/" className={styles.backLink}>
-            ← Back to Home
-          </Link>
+          <div className={styles.layout}>
+            {/* Sidebar - Left Column (sticky) */}
+            <div className={styles.sidebar}>
+              <div className={styles.sidebarContent}>
+                {/* Cover Image */}
+                <div className={styles.coverWrapper}>
+                  <Image
+                    src={manga.cover_image}
+                    alt={`${manga.title} cover`}
+                    fill
+                    className={styles.coverImage}
+                    priority
+                    sizes="230px"
+                  />
+                </div>
 
-          <div className={styles.content}>
-            {/* Cover Image */}
-            <div className={styles.coverWrapper}>
-              <Image
-                src={manga.cover_image}
-                alt={`${manga.title} cover`}
-                fill
-                className={styles.coverImage}
-                priority
-                sizes="320px"
-              />
+                {/* Manga Details */}
+                <div className={styles.details}>
+                  <div className={styles.header}>
+                    <h1 className={styles.title}>{manga.title}</h1>
+                    <p className={styles.author}>by {manga.author}</p>
+                  </div>
+
+                  <div className={styles.metadata}>
+                    <div className={`${styles.badge} ${styles.badgeDefault}`}>
+                      {manga.total_chapters} chapters
+                    </div>
+                    <div className={`${styles.badge} ${styles.badgeStatus}`}>
+                      {manga.status}
+                    </div>
+                  </div>
+
+                  {manga.description && (
+                    <div className={styles.section}>
+                      <h2 className={styles.sectionTitle}>Synopsis</h2>
+                      <p className={styles.description}>{manga.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Details */}
-            <div className={styles.details}>
-              <div className={styles.header}>
-                <h1 className={styles.title}>{manga.title}</h1>
-                <p className={styles.author}>by {manga.author}</p>
-              </div>
-
-              <div className={styles.metadata}>
-                <div className={`${styles.badge} ${styles.badgeDefault}`}>
-                  {manga.total_chapters} chapters
-                </div>
-                <div className={`${styles.badge} ${styles.badgeStatus}`}>
-                  {manga.status}
-                </div>
-              </div>
-
-              {manga.description && (
-                <div className={styles.section}>
-                  <h2 className={styles.sectionTitle}>Synopsis</h2>
-                  <p className={styles.description}>{manga.description}</p>
-                </div>
-              )}
+            {/* Main Content - Right Column (wider, scrollable) */}
+            <div className={styles.mainContent}>
+              <MangaChapterSection chapters={chapterData} />
             </div>
           </div>
-
-          {/* Chapter Ratings Section */}
-          <MangaChapterSection chapters={chapterData} />
         </div>
       </main>
     </div>
