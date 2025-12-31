@@ -9,10 +9,26 @@ interface ChapterData {
   cover_image: string
   avg_rating: number | null
   review_count: number
+  ratings?: number[]
 }
 
 interface ChapterInfoProps {
   chapter: ChapterData | null
+}
+
+// Calculate histogram buckets (10 buckets for ratings 1-10)
+function calculateHistogram(ratings: number[]) {
+  const buckets = Array(10).fill(0)
+
+  ratings.forEach(rating => {
+    // Map rating (0-10) to bucket index (0-9)
+    const bucketIndex = Math.min(Math.floor(rating) - 1, 9)
+    if (bucketIndex >= 0) {
+      buckets[bucketIndex]++
+    }
+  })
+
+  return buckets
 }
 
 export default function ChapterInfo({ chapter }: ChapterInfoProps) {
@@ -26,6 +42,10 @@ export default function ChapterInfo({ chapter }: ChapterInfoProps) {
     )
   }
 
+  const ratings = chapter.ratings || []
+  const histogram = calculateHistogram(ratings)
+  const maxCount = Math.max(...histogram, 1)
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -38,29 +58,61 @@ export default function ChapterInfo({ chapter }: ChapterInfoProps) {
         </p>
       </div>
 
-      <div className={styles.stats}>
-        {chapter.avg_rating !== null ? (
-          <div className={styles.statItem}>
-            <div className={styles.ratingBadge}>
-              <span className={styles.ratingValue}>{chapter.avg_rating.toFixed(1)}</span>
-              <span className={styles.ratingStar}>★</span>
+      {/* Rating Histogram */}
+      {chapter.review_count > 0 ? (
+        <div className={styles.ratingsChart}>
+          <div className={styles.ratingsHeader}>
+            <h4 className={styles.ratingsTitle}>RATINGS</h4>
+            <div className={styles.fansCount}>
+              {chapter.review_count} {chapter.review_count === 1 ? 'RATING' : 'RATINGS'}
             </div>
-            <p className={styles.statLabel}>Average Rating</p>
           </div>
-        ) : (
-          <div className={styles.statItem}>
-            <div className={styles.noRating}>—</div>
-            <p className={styles.statLabel}>No Ratings Yet</p>
-          </div>
-        )}
 
-        <div className={styles.statItem}>
-          <div className={styles.reviewCount}>{chapter.review_count}</div>
-          <p className={styles.statLabel}>
-            {chapter.review_count === 1 ? 'Review' : 'Reviews'}
-          </p>
+          <div className={styles.ratingsBody}>
+            {/* Left: Star indicator */}
+            <div className={styles.starIndicator}>
+              <span className={styles.starIcon}>★</span>
+            </div>
+
+            {/* Center: Vertical histogram bars */}
+            <div className={styles.histogram}>
+              {histogram.map((count, index) => {
+                const heightPercentage = maxCount > 0 ? (count / maxCount) * 100 : 0
+                const starRating = index + 1
+                return (
+                  <div
+                    key={index}
+                    className={styles.histogramBarContainer}
+                    title={`${starRating} star${starRating !== 1 ? 's' : ''}: ${count} rating${count !== 1 ? 's' : ''}`}
+                  >
+                    <div
+                      className={styles.histogramBar}
+                      style={{
+                        height: `${heightPercentage}%`,
+                        opacity: 0.3 + (heightPercentage / 100) * 0.7
+                      }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Right: Average rating with stars */}
+            <div className={styles.averageRatingSection}>
+              <div className={styles.averageNumber}>{chapter.avg_rating?.toFixed(1)}</div>
+              <div className={styles.starDisplay}>
+                {[...Array(5)].map((_, index) => (
+                  <span key={index} className={styles.starIconSmall}>★</span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className={styles.noRatings}>
+          <p>No ratings yet</p>
+        </div>
+      )}
     </div>
   )
 }

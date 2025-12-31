@@ -24,30 +24,41 @@ export default async function MangaDetailPage({
     notFound()
   }
 
-  // Fetch all chapters for this manga
-  const { data: chapters } = await supabase
+  // Fetch all chapters for this manga with review stats using a single query with aggregation
+  const { data: chapterData } = await supabase
     .from('chapters')
-    .select('id, chapter_number, title, cover_image, release_date, volume_number, arc')
+    .select(`
+      id,
+      chapter_number,
+      title,
+      cover_image,
+      release_date,
+      volume_number,
+      arc,
+      chapter_reviews(rating)
+    `)
     .eq('manga_id', id)
     .order('chapter_number', { ascending: true })
 
-  // Fetch review statistics per chapter
-  const { data: reviewStats } = await supabase
-    .from('chapter_reviews')
-    .select('chapter_id, rating')
-    .in('chapter_id', chapters?.map(c => c.id) || [])
-
-  // Aggregate review data by chapter
-  const chapterData = chapters?.map(chapter => {
-    const chapterReviews = reviewStats?.filter(r => r.chapter_id === chapter.id) || []
-    const avgRating = chapterReviews.length > 0
-      ? chapterReviews.reduce((sum, r) => sum + r.rating, 0) / chapterReviews.length
+  // Transform the data to include avg_rating, review_count, and individual ratings
+  const processedChapterData = chapterData?.map(chapter => {
+    const reviews = (chapter.chapter_reviews as any[]) || []
+    const ratings = reviews.map(r => r.rating)
+    const avgRating = reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : null
 
     return {
-      ...chapter,
+      id: chapter.id,
+      chapter_number: chapter.chapter_number,
+      title: chapter.title,
+      cover_image: chapter.cover_image,
+      release_date: chapter.release_date,
+      volume_number: chapter.volume_number,
+      arc: chapter.arc,
       avg_rating: avgRating,
-      review_count: chapterReviews.length
+      review_count: reviews.length,
+      ratings: ratings
     }
   }) || []
 
@@ -100,7 +111,7 @@ export default async function MangaDetailPage({
 
             {/* Main Content - Right Column (wider, scrollable) */}
             <div className={styles.mainContent}>
-              <MangaChapterSection chapters={chapterData} />
+              <MangaChapterSection chapters={processedChapterData} />
             </div>
           </div>
         </div>

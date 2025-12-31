@@ -10,6 +10,7 @@ interface ChapterData {
   cover_image: string
   avg_rating: number | null
   review_count: number
+  ratings?: number[]
   release_date?: string
   volume_number?: number
   arc?: string

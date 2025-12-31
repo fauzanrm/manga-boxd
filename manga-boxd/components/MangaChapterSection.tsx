@@ -13,6 +13,7 @@ interface ChapterData {
   cover_image: string
   avg_rating: number | null
   review_count: number
+  ratings?: number[]
 }
 
 interface MangaChapterSectionProps {
@@ -62,6 +63,26 @@ export default function MangaChapterSection({ chapters }: MangaChapterSectionPro
 
       <div className={styles.chapterRangeHeader}>
         <h3 className={styles.chapterRange}>Chapters {startChapter}-{endChapter}</h3>
+        {totalPages > 1 && (
+          <div className={styles.arrowControls}>
+            <button
+              className={styles.arrowButton}
+              onClick={goToPreviousPage}
+              disabled={currentPage === 0}
+              aria-label="Previous page"
+            >
+              ◀
+            </button>
+            <button
+              className={styles.arrowButton}
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages - 1}
+              aria-label="Next page"
+            >
+              ▶
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.gridWithArrows}>
@@ -71,27 +92,6 @@ export default function MangaChapterSection({ chapters }: MangaChapterSectionPro
           onChapterSelect={handleChapterSelect}
           currentPage={currentPage}
         />
-
-        {totalPages > 1 && (
-          <div className={styles.arrowControls}>
-            <button
-              className={styles.arrowButton}
-              onClick={goToPreviousPage}
-              disabled={currentPage === 0}
-              aria-label="Previous page"
-            >
-              ▲
-            </button>
-            <button
-              className={styles.arrowButton}
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages - 1}
-              aria-label="Next page"
-            >
-              ▼
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Two-column layout for Chapter Info and Interaction */}
